@@ -16,6 +16,8 @@ export default function Profile() {
   useEffect(() => {
     // token check — same pattern as your app
     const token = localStorage.getItem("token");
+    // console.log(token); to verify token presence in console
+    
     if (!token) {
       router.push("/auth");
       return;
@@ -24,11 +26,11 @@ export default function Profile() {
     // fetch user profile
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://localhost:8080/auth/profile", {
+        const res = await fetch("http://localhost:8080/auth/profile/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setUser(data);
+        setUser(data.user); 
       } catch (err) {
         console.log("Profile fetch error:", err);
       }
