@@ -15,7 +15,7 @@ export default function Menu() {
   useEffect(() => {
     const fetchMenu = async () => {
       try {
-        const res = await fetch("http://localhost:8080/menu/get");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/menu/get`);
         const data = await res.json();
         setMenu(data);
       } catch (error) {

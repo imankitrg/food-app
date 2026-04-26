@@ -26,7 +26,7 @@ export default function Profile() {
     // fetch user profile
     const fetchProfile = async () => {
       try {
-        const res = await fetch("http://localhost:8080/auth/profile/", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -39,7 +39,7 @@ export default function Profile() {
     // fetch order history
 const fetchOrders = async () => {
   try {
-    const res = await fetch("http://localhost:8080/order/my", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/my`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();

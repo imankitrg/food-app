@@ -61,10 +61,10 @@ export default function Checkout() {
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        address:item.address,
+        deliveryAddress:item.deliveryAddress,
       }));
 
-      const res = await fetch("http://localhost:8080/order/create", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

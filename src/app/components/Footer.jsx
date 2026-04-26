@@ -72,7 +72,7 @@ export default function Footer() {
         </div>
 
         {/* Social */}
-        {/* <div>
+        <div>
           <h3 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">
             Follow Us
           </h3>
@@ -82,7 +82,7 @@ export default function Footer() {
               { name: "Twitter", color: "bg-sky-500/15", icon: "🐦" },
               { name: "Facebook", color: "bg-blue-500/15", icon: "👤" },
             ].map((s) => (
-              
+              <a
                 key={s.name}
                 href="#"
                 className="flex items-center gap-3 px-3 py-2 rounded-lg border border-white/8 text-zinc-500 text-sm hover:border-orange-500/30 hover:text-white hover:bg-orange-500/5 transition-all"
@@ -94,7 +94,7 @@ export default function Footer() {
               </a>
             ))}
           </div>
-        </div> */}
+        </div>
       </div>
 
       {/* Bottom Bar */}

@@ -5,27 +5,45 @@ import { useRouter } from "next/navigation";
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
+  const [latestOrder, setLatestOrder] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(data);
+    fetchLatestOrder();
   }, []);
 
-  // same logic — total calculate
+  const fetchLatestOrder = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/my`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) return;
+      const orders = (data.orders || data).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      if (orders.length > 0) setLatestOrder(orders[0]);
+    } catch {
+      // silently fail
+    }
+  };
+
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const delivery = 40;
   const tax = Math.round(subtotal * 0.05);
   const total = subtotal + delivery + tax;
-
   const itemCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] px-6 py-8">
-
-      {/* Header */}
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <button className="w-9 h-9 rounded-xl border border-white/10 text-zinc-400 hover:border-orange-500/40 hover:text-white transition-all flex items-center justify-center">
               ←
@@ -44,6 +62,22 @@ export default function Cart() {
             </button>
           )}
         </div>
+
+        {/* ✅ Delivered Banner — sirf tab dikhe jab latest order completed ho */}
+        {latestOrder?.status === "completed" && (
+          <div className="mb-6 flex items-center gap-3 bg-green-500/8 border border-green-500/25 rounded-2xl px-5 py-4">
+            <div className="w-9 h-9 rounded-xl bg-green-500/15 flex items-center justify-center text-lg flex-shrink-0">
+              🎉
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-green-400">Order Delivered!</p>
+              <p className="text-xs text-zinc-500 mt-0.5 truncate">
+                {latestOrder.items?.map(i => i.name).join(", ")} · ₹{latestOrder.totalAmount}
+              </p>
+            </div>
+            <span className="text-xs text-green-500/60 flex-shrink-0">#{latestOrder._id.slice(-6).toUpperCase()}</span>
+          </div>
+        )}
 
         {/* Empty State */}
         {cart.length === 0 ? (
@@ -65,18 +99,13 @@ export default function Cart() {
                   key={item._id}
                   className="bg-[#111] border border-white/7 hover:border-orange-500/20 rounded-2xl p-4 flex items-center gap-4 transition-all"
                 >
-                  {/* Item Image placeholder */}
                   <div className="w-14 h-14 rounded-xl bg-orange-500/10 flex items-center justify-center text-2xl flex-shrink-0">
                     🍔
                   </div>
-
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <h2 className="text-sm font-medium text-white truncate">{item.name}</h2>
                     <p className="text-xs text-zinc-500 mt-0.5">₹ {item.price} per item</p>
                   </div>
-
-                  {/* Qty Controls */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => {
@@ -87,9 +116,7 @@ export default function Cart() {
                         localStorage.setItem("cart", JSON.stringify(updated));
                       }}
                       className="w-7 h-7 rounded-lg border border-white/10 text-zinc-400 hover:border-orange-500/40 hover:text-white transition-all flex items-center justify-center"
-                    >
-                      −
-                    </button>
+                    >−</button>
                     <span className="text-sm font-medium text-white w-5 text-center">{item.quantity}</span>
                     <button
                       onClick={() => {
@@ -100,17 +127,11 @@ export default function Cart() {
                         localStorage.setItem("cart", JSON.stringify(updated));
                       }}
                       className="w-7 h-7 rounded-lg border border-white/10 text-zinc-400 hover:border-orange-500/40 hover:text-white transition-all flex items-center justify-center"
-                    >
-                      +
-                    </button>
+                    >+</button>
                   </div>
-
-                  {/* Item Total */}
                   <p className="text-sm font-semibold text-white w-16 text-right flex-shrink-0">
                     ₹ {item.price * item.quantity}
                   </p>
-
-                  {/* Remove */}
                   <button
                     onClick={() => {
                       const updated = cart.filter((i) => i._id !== item._id);
@@ -118,9 +139,7 @@ export default function Cart() {
                       localStorage.setItem("cart", JSON.stringify(updated));
                     }}
                     className="w-7 h-7 rounded-lg border border-red-500/20 text-zinc-500 hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/5 transition-all flex items-center justify-center text-xs flex-shrink-0"
-                  >
-                    ✕
-                  </button>
+                  >✕</button>
                 </div>
               ))}
             </div>
@@ -128,7 +147,6 @@ export default function Cart() {
             {/* Order Summary */}
             <div className="bg-[#111] border border-white/7 rounded-2xl p-5 sticky top-24">
               <h2 className="text-sm font-semibold text-white mb-4">Order Summary</h2>
-
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Subtotal</span>
@@ -143,15 +161,11 @@ export default function Cart() {
                   <span className="text-white font-medium">₹ {tax}</span>
                 </div>
               </div>
-
               <div className="border-t border-white/7 my-4" />
-
               <div className="flex justify-between items-center mb-4">
                 <span className="text-sm font-semibold text-white">Total</span>
                 <span className="text-xl font-bold text-orange-500">₹ {total}</span>
               </div>
-
-              {/* Promo Code */}
               <div className="flex gap-2 mb-3">
                 <input
                   type="text"
@@ -162,13 +176,12 @@ export default function Cart() {
                   Apply
                 </button>
               </div>
-
               <button
-  onClick={() => router.push("/checkout")}
-  className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl"
->
-  Proceed to Checkout
-</button>
+                onClick={() => router.push("/checkout")}
+                className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl"
+              >
+                Proceed to Checkout
+              </button>
             </div>
 
           </div>
