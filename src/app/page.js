@@ -1,11 +1,10 @@
-import Image from 'next/image'
 import Link from 'next/link'
 
 export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0a0a0a] overflow-hidden">
 
-      {/* Background Video — same as original */}
+      {/* Background Video */}
       <video
         src="/141046-776768279.mp4"
         autoPlay
@@ -15,7 +14,7 @@ export default function Home() {
         className="absolute inset-0 w-full h-full object-cover z-0 opacity-35"
       />
 
-      {/* Overlay — darker on left so text is readable */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/95 via-[#0a0a0a]/80 to-[#0a0a0a]/60 z-0" />
 
       {/* Hero Section */}
@@ -23,7 +22,6 @@ export default function Home() {
 
         {/* LEFT */}
         <div>
-          {/* Live badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/30 bg-orange-500/8 text-orange-500 text-xs font-medium mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
             Now delivering in your area
@@ -70,18 +68,20 @@ export default function Home() {
           </div>
         </div>
 
-        {/* RIGHT IMAGE — same as original, just enhanced styling */}
+        {/* RIGHT — Video Player */}
         <div className="relative flex justify-center">
-          {/* Glow — same as original blur effect */}
+          {/* Glow */}
           <div className="absolute -inset-5 bg-orange-500/15 rounded-3xl blur-3xl" />
 
           <div className="relative w-full rounded-2xl overflow-hidden border border-orange-500/15">
-            <Image
-              src="/images.jpg"
-              alt="Food Image"
-              width={600}
-              height={400}
-              className="w-full rounded-2xl hover:scale-105 transition duration-500"
+            <video
+              src="/food.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full rounded-2xl object-cover"
+              style={{ maxHeight: '400px' }}
             />
           </div>
 
