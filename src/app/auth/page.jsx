@@ -9,6 +9,7 @@ export default function AuthPage() {
 
   // Login form state
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState("");
 
   // Signup form state
   const [signupForm, setSignupForm] = useState({ name: "", email: "", password: "" });
@@ -17,6 +18,7 @@ export default function AuthPage() {
   
   const handleLogin = async (e) => {
         e.preventDefault();
+        setLoginError(""); // pehle clear karo
     
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
@@ -24,13 +26,19 @@ export default function AuthPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginForm),
       });
-      
-        const data = await res.json();
-        localStorage.setItem("token", data.token); // same as original
-        router.push("/");
-        } catch (error) {
-                console.log("Login error:", error);
-        }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoginError( "Invalid email or password");
+        return;
+      }
+      localStorage.setItem("token", data.token); // same as original
+      router.push("/");
+    } catch (error) {
+      console.log("Login error:", error);
+      setLoginError("Network error. Please try again.");
+    }
       };
 
   // ── Signup logic — same as original ──
@@ -52,14 +60,12 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4 relative overflow-hidden">
-
       {/* Background glows */}
       <div className="absolute top-[-100px] right-[-100px] w-96 h-96 bg-orange-500/8 rounded-full blur-[80px]" />
       <div className="absolute bottom-[-80px] left-[-80px] w-72 h-72 bg-red-500/6 rounded-full blur-[60px]" />
 
       {/* Card */}
       <div className="relative z-10 w-full max-w-md bg-[#111] border border-white/8 rounded-2xl p-8">
-
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-7">
           <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-base">
@@ -91,24 +97,32 @@ export default function AuthPage() {
         {tab === "login" && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Email address</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Email address
+              </label>
               <input
                 type="email"
                 name="email"
                 placeholder="you@example.com"
                 value={loginForm.email}
-                onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, email: e.target.value })
+                }
                 className="w-full bg-[#0a0a0a] border border-white/10 focus:border-orange-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Password</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
                 placeholder="Enter your password"
                 value={loginForm.password}
-                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, password: e.target.value })
+                }
                 className="w-full bg-[#0a0a0a] border border-white/10 focus:border-orange-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all"
               />
             </div>
@@ -125,7 +139,12 @@ export default function AuthPage() {
             >
               Login
             </button>
-
+            {loginError && (
+              <div className="flex items-center gap-2 bg-red-500/5 border border-red-500/20 rounded-xl px-3 py-2.5">
+                <span>⚠️</span>
+                <p className="text-xs text-red-400">{loginError}</p>
+              </div>
+            )}
             <div className="flex items-center gap-3 my-1">
               <div className="flex-1 h-px bg-white/7" />
               <span className="text-xs text-zinc-600">or continue with</span>
@@ -155,35 +174,47 @@ export default function AuthPage() {
         {tab === "signup" && (
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Full name</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Full name
+              </label>
               <input
                 type="text"
                 name="name"
                 placeholder="John Doe"
                 value={signupForm.name}
-                onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                onChange={(e) =>
+                  setSignupForm({ ...signupForm, name: e.target.value })
+                }
                 className="w-full bg-[#0a0a0a] border border-white/10 focus:border-orange-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Email address</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Email address
+              </label>
               <input
                 type="email"
                 name="email"
                 placeholder="you@example.com"
                 value={signupForm.email}
-                onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                onChange={(e) =>
+                  setSignupForm({ ...signupForm, email: e.target.value })
+                }
                 className="w-full bg-[#0a0a0a] border border-white/10 focus:border-orange-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1.5">Password</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1.5">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
                 placeholder="Create a password"
                 value={signupForm.password}
-                onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                onChange={(e) =>
+                  setSignupForm({ ...signupForm, password: e.target.value })
+                }
                 className="w-full bg-[#0a0a0a] border border-white/10 focus:border-orange-500/50 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all"
               />
             </div>
@@ -219,7 +250,6 @@ export default function AuthPage() {
             </p>
           </form>
         )}
-
       </div>
     </div>
   );
