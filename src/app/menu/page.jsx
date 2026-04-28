@@ -54,11 +54,12 @@ export default function Menu() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] px-6 py-10">
-
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Our Menu</h1>
-        <p className="text-sm text-zinc-500">Fresh ingredients, bold flavors — order what you love</p>
+        <p className="text-sm text-zinc-500">
+          Fresh ingredients, bold flavors — order what you love
+        </p>
       </div>
 
       {/* Search */}
@@ -97,18 +98,26 @@ export default function Menu() {
             className="bg-[#111] border border-white/7 hover:border-orange-500/25 rounded-2xl overflow-hidden transition-all"
           >
             {/* Image area */}
-            <div className="relative h-40 bg-gradient-to-br from-[#1a0e00] to-[#2a1500] flex items-center justify-center text-5xl">
-              🍔
+            <div className="relative h-40 overflow-hidden">
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-full h-full object-cover"
+              />
+
               {/* Category badge */}
               <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/60 border border-orange-500/30 text-orange-500 text-xs font-medium capitalize">
                 {item.category}
               </span>
+
               {/* Availability badge */}
-              <span className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                item.isAvailable
-                  ? "bg-green-500/15 border-green-500/30 text-green-400"
-                  : "bg-red-500/12 border-red-500/30 text-red-400"
-              }`}>
+              <span
+                className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                  item.isAvailable
+                    ? "bg-green-500/15 border-green-500/30 text-green-400"
+                    : "bg-red-500/12 border-red-500/30 text-red-400"
+                }`}
+              >
                 {item.isAvailable ? "Available" : "Out of Stock"}
               </span>
             </div>
@@ -149,15 +158,15 @@ export default function Menu() {
                     !item.isAvailable
                       ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
                       : addedIds[item._id]
-                      ? "bg-green-600 text-white"
-                      : "bg-orange-500 hover:bg-orange-600 text-white"
+                        ? "bg-green-600 text-white"
+                        : "bg-orange-500 hover:bg-orange-600 text-white"
                   }`}
                 >
                   {!item.isAvailable
                     ? "Unavailable"
                     : addedIds[item._id]
-                    ? "Added ✓"
-                    : "+ Add"}
+                      ? "Added ✓"
+                      : "+ Add"}
                 </button>
               </div>
             </div>
@@ -169,11 +178,12 @@ export default function Menu() {
           <div className="col-span-full text-center py-20">
             <div className="text-4xl mb-3">🍽️</div>
             <p className="text-white font-medium mb-1">No dishes found</p>
-            <p className="text-xs text-zinc-500">Try a different search or category</p>
+            <p className="text-xs text-zinc-500">
+              Try a different search or category
+            </p>
           </div>
         )}
       </div>
-
     </div>
   );
 }
