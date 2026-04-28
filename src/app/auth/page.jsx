@@ -14,21 +14,24 @@ export default function AuthPage() {
   const [signupForm, setSignupForm] = useState({ name: "", email: "", password: "" });
 
   // ── Login logic — same as original ──
+  
   const handleLogin = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
+    
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginForm),
       });
-      const data = await res.json();
-      localStorage.setItem("token", data.token); // same as original
-      router.push("/");
-    } catch (error) {
-      console.log("Login error:", error);
-    }
-  };
+      
+        const data = await res.json();
+        localStorage.setItem("token", data.token); // same as original
+        router.push("/");
+        } catch (error) {
+                console.log("Login error:", error);
+        }
+      };
 
   // ── Signup logic — same as original ──
   const handleSignup = async (e) => {

@@ -67,7 +67,7 @@ export default function Navbar() {
           <Link href="/profile" className="px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
             profile
           </Link>
-          <Link href="/signup" className="px-3 py-2.5 rounded-lg text-sm font-medium text-orange-500 bg-orange-500/10 border border-orange-500/20 transition-all">
+          <Link href="/auth" className="px-3 py-2.5 rounded-lg text-sm font-medium text-orange-500 bg-orange-500/10 border border-orange-500/20 transition-all">
             Sign Up
           </Link>
         </div>

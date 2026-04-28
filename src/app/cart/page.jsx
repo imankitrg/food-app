@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
@@ -12,23 +13,29 @@ export default function Cart() {
     const data = JSON.parse(localStorage.getItem("cart")) || [];
     setCart(data);
     fetchLatestOrder();
-  }, []);
+  }, []);         
 
   const fetchLatestOrder = async () => {
     const token = localStorage.getItem("token");
+
     if (!token) return;
     try {
+      
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/my`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       const data = await res.json();
       if (!res.ok) return;
+      
       const orders = (data.orders || data).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
       if (orders.length > 0) setLatestOrder(orders[0]);
-    } catch {
-      // silently fail
+      
+        } catch (err) {
+              console.log(err);
+              // silently fail
     }
   };
 
@@ -85,9 +92,9 @@ export default function Cart() {
             <div className="text-5xl mb-4">🛒</div>
             <h2 className="text-lg font-medium text-white mb-2">Your cart is empty</h2>
             <p className="text-sm text-zinc-500 mb-6">Looks like you haven't added anything yet</p>
-            <a href="/menu" className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-all">
+            <Link href="/menu" className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-all">
               Browse Menu
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">

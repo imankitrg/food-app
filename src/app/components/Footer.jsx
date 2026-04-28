@@ -39,8 +39,9 @@ export default function Footer() {
             {[
               { label: "Home", href: "/" },
               { label: "Menu", href: "/menu" },
-              { label: "profile", href: "/contact" },
+              { label: "profile", href: "/profile" },
               { label: "Cart", href: "/cart" },
+              { label: "Authentication", href: "/auth" },
             ].map((item) => (
               <li key={item.href}>
                 <Link
