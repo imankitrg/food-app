@@ -100,7 +100,10 @@ export default function Menu() {
             {/* Image area */}
             <div className="relative h-40 overflow-hidden">
               <img
-                src={item.image}
+                src={item.image || "/fallback.jpg"}
+                onError={(e) => {
+                  e.target.src = "/fallback.jpg";
+                }}
                 alt={item.name}
                 className="w-full h-full object-cover"
               />
