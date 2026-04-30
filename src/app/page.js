@@ -1,6 +1,14 @@
 import Link from 'next/link'
 
 export default function Home() {
+  const reviews = [
+  { name:"Rahul K.", initials:"RK", meta:"Mumbai · 3 days ago", stars:5, color:"bg-orange-500", text:"Ordered a burger combo and it arrived in 24 minutes! Still hot and absolutely delicious.", tag:"🍔 Burger Combo" },
+  { name:"Priya S.", initials:"PS", meta:"Delhi · 1 week ago", stars:5, color:"bg-blue-500", text:"Biryani was perfectly cooked and packaging was leak-proof. Live tracking made it stress-free!", tag:"🍛 Biryani Bowl" },
+  { name:"Arjun M.", initials:"AM", meta:"Bangalore · 5 days ago", stars:5, color:"bg-green-500", text:"Amazing variety on the menu. Ordered sushi — fresh and well-presented. App experience is super smooth.", tag:"🍱 Sushi Platter" },
+  { name:"Neha J.", initials:"NJ", meta:"Pune · 2 weeks ago", stars:4, color:"bg-purple-500", text:"Great food quality. Pizza was crispy and hot. Slightly delayed but support resolved it instantly.", tag:"🍕 Margherita Pizza" },
+  { name:"Siddharth K.", initials:"SK", meta:"Hyderabad · 4 days ago", stars:5, color:"bg-pink-500", text:"Ordering every week for 2 months. Consistent quality and generous portions. Love the noodle bowl!", tag:"🍜 Noodle Bowl" },
+  { name:"Divya V.", initials:"DV", meta:"Chennai · 1 week ago", stars:5, color:"bg-teal-500", text:"Super fresh salads and eco-friendly packaging. This is my go-to app for lunch at work now.", tag:"🥗 Garden Salad" },
+]
   return (
     <div className="relative min-h-screen flex flex-col bg-[#0a0a0a] overflow-hidden">
 
@@ -105,6 +113,59 @@ export default function Home() {
         </div>
 
       </div>
+      {/* Reviews Section */}
+<div className="relative z-10 max-w-6xl mx-auto w-full px-6 pb-16">
+
+  {/* Rating Summary */}
+  <div className="bg-[#111] border border-white/7 rounded-2xl p-5 flex items-center gap-8 mb-8">
+    <div className="text-center">
+      <p className="text-4xl font-bold text-white">4.9</p>
+      <div className="flex gap-1 justify-center my-1 text-orange-500 text-sm">★★★★★</div>
+      <p className="text-xs text-zinc-500">Overall rating</p>
+    </div>
+    <div className="w-px h-14 bg-white/7" />
+    {/* Rating bars yahan add karo */}
+    <div className="flex-1 space-y-1.5">
+      {[["5",82],["4",12],["3",4],["2",1.5],["1",0.5]].map(([s,w])=>(
+        <div key={s} className="flex items-center gap-2">
+          <span className="text-xs text-zinc-500 w-2">{s}</span>
+          <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-orange-500 rounded-full" style={{width:`${w}%`}} />
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className="w-px h-14 bg-white/7" />
+    <p className="text-xs text-zinc-500">10,000+ verified<br/>customer reviews</p>
+  </div>
+
+  {/* Header */}
+  <div className="flex items-end justify-between mb-5">
+    <div>
+      <h2 className="text-xl font-bold text-white">What our customers say</h2>
+      <p className="text-xs text-zinc-500 mt-1">Real reviews from real foodies</p>
+    </div>
+    <button className="text-xs text-orange-500 border border-orange-500/25 rounded-lg px-3 py-1.5">See all →</button>
+  </div>
+
+  {/* Cards Grid */}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    {reviews.map((r) => (
+      <div key={r.name} className="bg-[#111] border border-white/7 hover:border-orange-500/20 rounded-2xl p-5 transition-all">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold text-white ${r.color}`}>{r.initials}</div>
+          <div>
+            <p className="text-xs font-medium text-white">{r.name}</p>
+            <p className="text-xs text-zinc-500">{r.meta}</p>
+          </div>
+        </div>
+        <div className="text-orange-500 text-xs mb-2">{"★".repeat(r.stars)}{"☆".repeat(5-r.stars)}</div>
+        <p className="text-xs text-zinc-400 leading-relaxed">{r.text}</p>
+        <span className="inline-block mt-3 text-xs text-orange-500 bg-orange-500/8 border border-orange-500/15 px-2.5 py-1 rounded-full">{r.tag}</span>
+      </div>
+    ))}
+  </div>
+</div>
 
       {/* Feature Strip */}
       <div className="relative z-10 max-w-6xl mx-auto w-full px-6 pb-16 grid grid-cols-1 md:grid-cols-3 gap-3">

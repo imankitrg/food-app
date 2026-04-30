@@ -46,7 +46,7 @@ export default function AdminLogin() {
       router.push("/dashboard");
 
     } catch (err) {
-      setError("Network error. Please try again.");
+      setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
