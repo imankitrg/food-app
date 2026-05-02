@@ -3,18 +3,15 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="bg-[#0a0a0a] border-t border-orange-500/20">
-
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-4 gap-10">
-
         {/* Logo / About */}
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center text-sm">
-              🍔
-            </div>
-            <span className="text-lg font-semibold text-white">
-              Food<span className="text-orange-500">Bite</span>
-            </span>
+          <div className="mb-5">
+            <img
+              src="/foodbite_logo.svg"
+              alt="FoodBite logo"
+              className="h-35  w-60 "
+            />
           </div>
           <p className="text-sm text-zinc-500 leading-relaxed mb-5">
             Best food delivery app. Fast, fresh and reliable service delivered
@@ -61,14 +58,20 @@ export default function Footer() {
             Services
           </h3>
           <ul className="space-y-2">
-            {["Food Delivery", "Online Orders", "24/7 Support", "Live Tracking"].map(
-              (s) => (
-                <li key={s} className="flex items-center gap-2 text-sm text-zinc-500">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
-                  {s}
-                </li>
-              )
-            )}
+            {[
+              "Food Delivery",
+              "Online Orders",
+              "24/7 Support",
+              "Live Tracking",
+            ].map((s) => (
+              <li
+                key={s}
+                className="flex items-center gap-2 text-sm text-zinc-500"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+                {s}
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -88,7 +91,9 @@ export default function Footer() {
                 href="#"
                 className="flex items-center gap-3 px-3 py-2 rounded-lg border border-white/8 text-zinc-500 text-sm hover:border-orange-500/30 hover:text-white hover:bg-orange-500/5 transition-all"
               >
-                <span className={`w-7 h-7 rounded-md ${s.color} flex items-center justify-center text-xs`}>
+                <span
+                  className={`w-7 h-7 rounded-md ${s.color} flex items-center justify-center text-xs`}
+                >
                   {s.icon}
                 </span>
                 {s.name}
@@ -101,17 +106,22 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-white/5">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
-          <p className="text-xs text-zinc-600">© 2026 FoodBite. All rights reserved.</p>
+          <p className="text-xs text-zinc-600">
+            © 2026 FoodBite. All rights reserved.
+          </p>
           <div className="flex gap-4">
             {["Privacy Policy", "Terms of Service", "Sitemap"].map((l) => (
-              <a key={l} href="#" className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors">
+              <a
+                key={l}
+                href="#"
+                className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+              >
                 {l}
               </a>
             ))}
           </div>
         </div>
       </div>
-
     </footer>
   );
 }
