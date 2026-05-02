@@ -9,9 +9,9 @@ export default function Menu() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [addedIds, setAddedIds] = useState({});
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // same fetch logic
   useEffect(() => {
     const fetchMenu = async () => {
       try {
@@ -20,6 +20,8 @@ export default function Menu() {
         setMenu(data);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchMenu();
@@ -92,92 +94,110 @@ export default function Menu() {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-        {filtered.map((item) => (
-          <div
-            key={item._id}
-            className="bg-[#111] border border-white/7 hover:border-orange-500/25 rounded-2xl overflow-hidden transition-all"
-          >
-            {/* Image area */}
-            <div className="relative h-40 overflow-hidden">
-              <img
-                src={item.image || "/fallback.jpg"}
-                onError={(e) => {
-                  e.target.src = "/fallback.jpg";
-                }}
-                alt={item.name}
-                className="w-full h-full object-cover"
-              />
-
-              {/* Category badge */}
-              <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/60 border border-orange-500/30 text-orange-500 text-xs font-medium capitalize">
-                {item.category}
-              </span>
-
-              {/* Availability badge */}
-              <span
-                className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-                  item.isAvailable
-                    ? "bg-green-500/15 border-green-500/30 text-green-400"
-                    : "bg-red-500/12 border-red-500/30 text-red-400"
-                }`}
+        {loading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className="bg-[#111] border border-white/7 rounded-2xl overflow-hidden animate-pulse"
               >
-                {item.isAvailable ? "Available" : "Out of Stock"}
-              </span>
-            </div>
+                <div className="h-40 bg-white/5" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-white/10 rounded-full w-3/4" />
+                  <div className="h-3 bg-white/10 rounded-full w-5/6" />
+                  <div className="h-3 bg-white/10 rounded-full w-1/2" />
+                  <div className="flex items-center justify-between pt-3 border-t border-white/6">
+                    <div className="h-6 w-16 bg-white/10 rounded-full" />
+                    <div className="h-8 w-20 bg-white/10 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            ))
+          : filtered.map((item) => (
+              <div
+                key={item._id}
+                className="bg-[#111] border border-white/7 hover:border-orange-500/25 rounded-2xl overflow-hidden transition-all"
+              >
+                {/* Image area */}
+                <div className="relative h-40 overflow-hidden">
+                  <img
+                    src={item.image || "/fallback.jpg"}
+                    onError={(e) => {
+                      e.target.src = "/fallback.jpg";
+                    }}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
 
-            {/* Body */}
-            <div className="p-4">
-              <h2 className="text-sm font-semibold text-white capitalize mb-1">
-                {item.name}
-              </h2>
-              <p className="text-xs text-zinc-500 leading-relaxed mb-3 line-clamp-2">
-                {item.description}
-              </p>
-
-              {/* Tags — Taste + Ingredients */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                <span className="px-2 py-0.5 rounded-md text-xs bg-orange-500/8 border border-orange-500/15 text-orange-400">
-                  {item.taste}
-                </span>
-                {item.ingredients?.slice(0, 3).map((ing) => (
-                  <span
-                    key={ing}
-                    className="px-2 py-0.5 rounded-md text-xs bg-white/5 border border-white/7 text-zinc-400"
-                  >
-                    {ing}
+                  {/* Category badge */}
+                  <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/60 border border-orange-500/30 text-orange-500 text-xs font-medium capitalize">
+                    {item.category}
                   </span>
-                ))}
-              </div>
 
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-3 border-t border-white/6">
-                <span className="text-lg font-bold text-orange-500">
-                  ₹ {item.price}
-                </span>
-                <button
-                  onClick={() => addToCart(item)}
-                  disabled={!item.isAvailable || addedIds[item._id]}
-                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                    !item.isAvailable
-                      ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                      : addedIds[item._id]
-                        ? "bg-green-600 text-white"
-                        : "bg-orange-500 hover:bg-orange-600 text-white"
-                  }`}
-                >
-                  {!item.isAvailable
-                    ? "Unavailable"
-                    : addedIds[item._id]
-                      ? "Added ✓"
-                      : "+ Add"}
-                </button>
+                  {/* Availability badge */}
+                  <span
+                    className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                      item.isAvailable
+                        ? "bg-green-500/15 border-green-500/30 text-green-400"
+                        : "bg-red-500/12 border-red-500/30 text-red-400"
+                    }`}
+                  >
+                    {item.isAvailable ? "Available" : "Out of Stock"}
+                  </span>
+                </div>
+
+                {/* Body */}
+                <div className="p-4">
+                  <h2 className="text-sm font-semibold text-white capitalize mb-1">
+                    {item.name}
+                  </h2>
+                  <p className="text-xs text-zinc-500 leading-relaxed mb-3 line-clamp-2">
+                    {item.description}
+                  </p>
+
+                  {/* Tags — Taste + Ingredients */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    <span className="px-2 py-0.5 rounded-md text-xs bg-orange-500/8 border border-orange-500/15 text-orange-400">
+                      {item.taste}
+                    </span>
+                    {item.ingredients?.slice(0, 3).map((ing) => (
+                      <span
+                        key={ing}
+                        className="px-2 py-0.5 rounded-md text-xs bg-white/5 border border-white/7 text-zinc-400"
+                      >
+                        {ing}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-3 border-t border-white/6">
+                    <span className="text-lg font-bold text-orange-500">
+                      ₹ {item.price}
+                    </span>
+                    <button
+                      onClick={() => addToCart(item)}
+                      disabled={!item.isAvailable || addedIds[item._id]}
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                        !item.isAvailable
+                          ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                          : addedIds[item._id]
+                            ? "bg-green-600 text-white"
+                            : "bg-orange-500 hover:bg-orange-600 text-white"
+                      }`}
+                    >
+                      {!item.isAvailable
+                        ? "Unavailable"
+                        : addedIds[item._id]
+                          ? "Added ✓"
+                          : "+ Add"}
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))}
 
         {/* Empty state */}
-        {filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (
           <div className="col-span-full text-center py-20">
             <div className="text-4xl mb-3">🍽️</div>
             <p className="text-white font-medium mb-1">No dishes found</p>
