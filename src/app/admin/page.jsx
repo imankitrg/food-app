@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { setCookie } from "../../lib/cookies";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -42,9 +43,8 @@ export default function AdminLogin() {
       }
 
       // Token save karo aur dashboard pe bhejo
-      localStorage.setItem("token", token);
+      setCookie("token", token, { maxAge: 60 * 60 * 24 * 7 });
       router.push("/dashboard");
-
     } catch (err) {
       setError("An error occurred. Please try again.");
     } finally {
@@ -55,26 +55,26 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-xl font-bold mx-auto mb-3">
             F
           </div>
           <h1 className="text-xl font-bold text-white">FoodBite Admin</h1>
-          <p className="text-sm text-zinc-500 mt-1">Sign in to access the dashboard</p>
+          <p className="text-sm text-zinc-500 mt-1">
+            Sign in to access the dashboard
+          </p>
         </div>
 
         {/* Form */}
         <div className="bg-[#111] border border-white/7 rounded-2xl p-6 space-y-4">
-
           <div className="flex flex-col gap-1.5">
             <label className="text-xs text-zinc-500">Email</label>
             <input
               type="email"
               value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-              onKeyDown={e => e.key === "Enter" && handleLogin()}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               placeholder="admin@foodbite.com"
               className="bg-[#0a0a0a] border border-white/10 focus:border-orange-500/40 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-all"
             />
@@ -85,8 +85,8 @@ export default function AdminLogin() {
             <input
               type="password"
               value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              onKeyDown={e => e.key === "Enter" && handleLogin()}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               placeholder="••••••••"
               className="bg-[#0a0a0a] border border-white/10 focus:border-orange-500/40 rounded-xl px-3 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition-all"
             />
@@ -110,7 +110,9 @@ export default function AdminLogin() {
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Signing in...
               </>
-            ) : "Sign In"}
+            ) : (
+              "Sign In"
+            )}
           </button>
         </div>
 

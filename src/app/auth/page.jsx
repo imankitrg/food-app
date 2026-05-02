@@ -3,30 +3,33 @@
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { setCookie } from "../../lib/cookies";
 
 function AuthPageContent() {
-
-  
   const router = useRouter();
   const [tab, setTab] = useState("login"); // "login" | "signup"
 
-        const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
 
-        const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/";
 
   // Login form state
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
 
   // Signup form state
-  const [signupForm, setSignupForm] = useState({ name: "", email: "", password: "" });
+  const [signupForm, setSignupForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   // ── Login logic — same as original ──
-  
+
   const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoginError(""); // pehle clear karo
-    
+    e.preventDefault();
+    setLoginError(""); // pehle clear karo
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
@@ -37,27 +40,29 @@ function AuthPageContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        setLoginError( "Invalid email or password");
+        setLoginError("Invalid email or password");
         return;
       }
-      localStorage.setItem("token", data.token); // same as original
+      setCookie("token", data.token, { maxAge: 60 * 60 * 24 * 7 });
       router.push(redirect); // after login → redirect to /redirect which will handle further redirection logic
     } catch (error) {
       console.log("Login error:", error);
-      setLoginError("Network error. Please try again."); 
+      setLoginError("Network error. Please try again.");
     }
-      };
-
+  };
 
   // ── Signup logic — same as original ──
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(signupForm),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(signupForm),
+        },
+      );
       const data = await res.json();
       console.log("Signup response:", data);
       setTab("login"); // after signup → switch to login tab
@@ -167,7 +172,7 @@ function AuthPageContent() {
             </button>
 
             <p className="text-center text-xs text-zinc-600 pt-1">
-              Don't have an account?{" "}
+              Do not have an account?{" "}
               <span
                 onClick={() => setTab("signup")}
                 className="text-orange-500 font-medium cursor-pointer hover:underline"

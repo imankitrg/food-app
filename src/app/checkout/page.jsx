@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getCookie } from "../../lib/cookies";
 
 export default function Checkout() {
   const router = useRouter();
@@ -22,21 +23,24 @@ export default function Checkout() {
   const [orderError, setOrderError] = useState("");
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
+    const token = getCookie("token");
 
-  if (!token || token === "undefined" || token === "null") {
-    setAuthStatus("unauthenticated");
-    router.replace("/auth?redirect=/checkout");
-    return;
-  }
+    if (!token || token === "undefined" || token === "null") {
+      setAuthStatus("unauthenticated");
+      router.replace("/auth?redirect=/checkout");
+      return;
+    }
 
-  setAuthStatus("authenticated");
+    setAuthStatus("authenticated");
 
-  const cartData = JSON.parse(localStorage.getItem("cart")) || [];
-  setCart(cartData);
-}, [router]);
+    const cartData = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(cartData);
+  }, [router]);
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cart.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
   const delivery = 40;
   const tax = Math.round(subtotal * 0.05);
   const total = subtotal + delivery + tax;
@@ -45,44 +49,51 @@ export default function Checkout() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-const handlePlaceOrder = async () => {
+  const handlePlaceOrder = async () => {
+    const token = getCookie("token");
 
-  const token = localStorage.getItem("token");
-  
+    if (!token || token === "undefined" || token === "null") {
+      router.replace("/auth?redirect=/checkout");
+      return;
+    }
+    console.log("TOKEN:", token);
 
-  if (!token || token === "undefined" || token === "null") {
-    router.replace("/auth?redirect=/checkout");
-    return;
-  }
-  console.log("TOKEN:", localStorage.getItem("token"));
-
-  if (!form.name || !form.phone || !form.address || !form.city || !form.pincode) {
-    setOrderError("Please fill all required fields.");
-    return;
-  }
+    if (
+      !form.name ||
+      !form.phone ||
+      !form.address ||
+      !form.city ||
+      !form.pincode
+    ) {
+      setOrderError("Please fill all required fields.");
+      return;
+    }
 
     setIsLoading(true);
     setOrderError("");
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getCookie("token");
 
       // Cart items — { name, quantity, price } format mein
       const items = cart.map((item) => ({
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        deliveryAddress:item.deliveryAddress,
+        deliveryAddress: item.deliveryAddress,
       }));
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/order/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items }),
         },
-        body: JSON.stringify({ items }),
-      });
+      );
 
       const data = await res.json();
 
@@ -100,7 +111,6 @@ const handlePlaceOrder = async () => {
       setIsLoading(false);
     }
   };
-
 
   // ─── Loading State ───────────────────────────────────────────
   if (authStatus === "loading") {
@@ -122,11 +132,18 @@ const handlePlaceOrder = async () => {
           <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-3xl mx-auto mb-4">
             🔒
           </div>
-          <h2 className="text-lg font-semibold text-white mb-2">Login Required</h2>
-          <p className="text-sm text-zinc-500 mb-1">You need to be logged in to checkout.</p>
+          <h2 className="text-lg font-semibold text-white mb-2">
+            Login Required
+          </h2>
+          <p className="text-sm text-zinc-500 mb-1">
+            You need to be logged in to checkout.
+          </p>
           <p className="text-xs text-zinc-600">Redirecting to login page...</p>
           <div className="mt-4 w-32 h-1 bg-white/5 rounded-full mx-auto overflow-hidden">
-            <div className="h-full bg-orange-500 rounded-full animate-[grow_1.5s_linear_forwards]" style={{ width: "0%", animation: "grow 1.5s linear forwards" }} />
+            <div
+              className="h-full bg-orange-500 rounded-full animate-[grow_1.5s_linear_forwards]"
+              style={{ width: "0%", animation: "grow 1.5s linear forwards" }}
+            />
           </div>
           <style>{`@keyframes grow { from { width: 0% } to { width: 100% } }`}</style>
         </div>
@@ -144,13 +161,19 @@ const handlePlaceOrder = async () => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Order Placed!</h2>
           <p className="text-sm text-zinc-400 mb-1">
-            Thank you, <span className="text-white font-medium">{form.name}</span>!
+            Thank you,{" "}
+            <span className="text-white font-medium">{form.name}</span>!
           </p>
           <p className="text-sm text-zinc-500 mb-6">
-            Your order of <span className="text-orange-500 font-semibold">₹{total}</span> is being prepared. 🍔
+            Your order of{" "}
+            <span className="text-orange-500 font-semibold">₹{total}</span> is
+            being prepared. 🍔
           </p>
           <button
-            onClick={() => { localStorage.removeItem("cart"); router.push("/menu"); }}
+            onClick={() => {
+              localStorage.removeItem("cart");
+              router.push("/menu");
+            }}
             className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold rounded-xl transition-all"
           >
             Back to Menu
@@ -164,7 +187,6 @@ const handlePlaceOrder = async () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] px-6 py-8">
       <div className="max-w-5xl mx-auto">
-
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <button
@@ -175,26 +197,30 @@ const handlePlaceOrder = async () => {
           </button>
           <div>
             <h1 className="text-xl font-semibold text-white">Checkout</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">Almost there! Just fill in your details.</p>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              Almost there! Just fill in your details.
+            </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
-
           {/* ── Left: Delivery Form ── */}
           <div className="space-y-5">
-
             {/* Delivery Info */}
             <div className="bg-[#111] border border-white/7 rounded-2xl p-5">
               <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-400 text-xs flex items-center justify-center">1</span>
+                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-400 text-xs flex items-center justify-center">
+                  1
+                </span>
                 Delivery Details
               </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {/* Full Name */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Full Name <span className="text-orange-500">*</span></label>
+                  <label className="text-xs text-zinc-500">
+                    Full Name <span className="text-orange-500">*</span>
+                  </label>
                   <input
                     name="name"
                     value={form.name}
@@ -206,7 +232,9 @@ const handlePlaceOrder = async () => {
 
                 {/* Phone */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Phone Number <span className="text-orange-500">*</span></label>
+                  <label className="text-xs text-zinc-500">
+                    Phone Number <span className="text-orange-500">*</span>
+                  </label>
                   <input
                     name="phone"
                     value={form.phone}
@@ -230,7 +258,9 @@ const handlePlaceOrder = async () => {
 
                 {/* Address */}
                 <div className="flex flex-col gap-1 sm:col-span-2">
-                  <label className="text-xs text-zinc-500">Delivery Address <span className="text-orange-500">*</span></label>
+                  <label className="text-xs text-zinc-500">
+                    Delivery Address <span className="text-orange-500">*</span>
+                  </label>
                   <textarea
                     name="address"
                     value={form.address}
@@ -243,7 +273,9 @@ const handlePlaceOrder = async () => {
 
                 {/* City */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">City <span className="text-orange-500">*</span></label>
+                  <label className="text-xs text-zinc-500">
+                    City <span className="text-orange-500">*</span>
+                  </label>
                   <input
                     name="city"
                     value={form.city}
@@ -255,7 +287,9 @@ const handlePlaceOrder = async () => {
 
                 {/* Pincode */}
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs text-zinc-500">Pincode <span className="text-orange-500">*</span></label>
+                  <label className="text-xs text-zinc-500">
+                    Pincode <span className="text-orange-500">*</span>
+                  </label>
                   <input
                     name="pincode"
                     value={form.pincode}
@@ -267,7 +301,10 @@ const handlePlaceOrder = async () => {
 
                 {/* Landmark */}
                 <div className="flex flex-col gap-1 sm:col-span-2">
-                  <label className="text-xs text-zinc-500">Landmark <span className="text-zinc-600 text-xs">(optional)</span></label>
+                  <label className="text-xs text-zinc-500">
+                    Landmark{" "}
+                    <span className="text-zinc-600 text-xs">(optional)</span>
+                  </label>
                   <input
                     name="landmark"
                     value={form.landmark}
@@ -282,7 +319,9 @@ const handlePlaceOrder = async () => {
             {/* Special Instructions */}
             <div className="bg-[#111] border border-white/7 rounded-2xl p-5">
               <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-400 text-xs flex items-center justify-center">2</span>
+                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-400 text-xs flex items-center justify-center">
+                  2
+                </span>
                 Special Instructions
               </h2>
               <textarea
@@ -298,19 +337,24 @@ const handlePlaceOrder = async () => {
             {/* Payment Method */}
             <div className="bg-[#111] border border-white/7 rounded-2xl p-5">
               <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-400 text-xs flex items-center justify-center">3</span>
+                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-400 text-xs flex items-center justify-center">
+                  3
+                </span>
                 Payment Method
               </h2>
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-orange-500/30 bg-orange-500/5">
                 <div className="w-4 h-4 rounded-full border-2 border-orange-500 flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-orange-500" />
                 </div>
-                <span className="text-sm text-white font-medium">Cash on Delivery</span>
+                <span className="text-sm text-white font-medium">
+                  Cash on Delivery
+                </span>
                 <span className="ml-auto text-lg">💵</span>
               </div>
-              <p className="text-xs text-zinc-600 mt-2 pl-1">More payment options coming soon</p>
+              <p className="text-xs text-zinc-600 mt-2 pl-1">
+                More payment options coming soon
+              </p>
             </div>
-
           </div>
 
           {/* ── Right: Order Summary ── */}
@@ -320,9 +364,16 @@ const handlePlaceOrder = async () => {
             {/* Items list */}
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {cart.map((item) => (
-                <div key={item._id} className="flex justify-between items-center text-xs">
-                  <span className="text-zinc-400 truncate max-w-[160px]">{item.name} × {item.quantity}</span>
-                  <span className="text-white font-medium ml-2">₹{item.price * item.quantity}</span>
+                <div
+                  key={item._id}
+                  className="flex justify-between items-center text-xs"
+                >
+                  <span className="text-zinc-400 truncate max-w-[160px]">
+                    {item.name} × {item.quantity}
+                  </span>
+                  <span className="text-white font-medium ml-2">
+                    ₹{item.price * item.quantity}
+                  </span>
                 </div>
               ))}
             </div>
@@ -348,7 +399,9 @@ const handlePlaceOrder = async () => {
 
             <div className="flex justify-between items-center">
               <span className="text-sm font-semibold text-white">Total</span>
-              <span className="text-xl font-bold text-orange-500">₹{total}</span>
+              <span className="text-xl font-bold text-orange-500">
+                ₹{total}
+              </span>
             </div>
 
             {/* Error Message */}
@@ -378,7 +431,6 @@ const handlePlaceOrder = async () => {
               Pay <span className="text-zinc-400">₹{total}</span> on delivery 💵
             </p>
           </div>
-
         </div>
       </div>
     </div>

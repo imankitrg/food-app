@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getCookie, removeCookie } from "../../lib/cookies";
 
 export default function Profile() {
   const router = useRouter();
@@ -15,77 +16,88 @@ export default function Profile() {
 
   useEffect(() => {
     // token check — same pattern as your app
-    const token = localStorage.getItem("token");
+    const token = getCookie("token");
     // console.log(token); to verify token presence in console
-    
+
     if (
-  !token ||
-  token === "undefined" ||
-  token === "null" ||
-  token.trim() === ""
-) {
-  localStorage.removeItem("token");
-  router.replace("/auth");
-  return;
-}
+      !token ||
+      token === "undefined" ||
+      token === "null" ||
+      token.trim() === ""
+    ) {
+      removeCookie("token");
+      router.replace("/auth");
+      return;
+    }
 
     // fetch user profile
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/profile/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         const data = await res.json();
-        setUser(data.user); 
+        setUser(data.user);
       } catch (err) {
         console.log("Profile fetch error:", err);
       }
     };
 
     // fetch order history
-const fetchOrders = async () => {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/my`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/order/my`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
 
-    // FIX: API array return kare ya object ke andar ho
-    setOrders(Array.isArray(data) ? data : data.orders || []);
-  } catch (err) {
-    console.log("Orders fetch error:", err);
-  }
-};
+        // FIX: API array return kare ya object ke andar ho
+        setOrders(Array.isArray(data) ? data : data.orders || []);
+      } catch (err) {
+        console.log("Orders fetch error:", err);
+      }
+    };
 
     fetchProfile();
     fetchOrders();
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    removeCookie("token");
     router.push("/auth");
   };
 
   // Stats from orders
-// Change these two lines (line 60-61):
-const totalSpent = Array.isArray(orders) ? orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0) : 0;
-const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "delivered").length : 0;
+  // Change these two lines (line 60-61):
+  const totalSpent = Array.isArray(orders)
+    ? orders.reduce((acc, o) => acc + (o.totalAmount || 0), 0)
+    : 0;
+  const delivered = Array.isArray(orders)
+    ? orders.filter((o) => o.status === "delivered").length
+    : 0;
 
   // Initials from name
   const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "U";
 
   const statusStyles = {
     delivered: "bg-green-500/12 text-green-400 border border-green-500/20",
-    pending:   "bg-orange-500/12 text-orange-400 border border-orange-500/20",
+    pending: "bg-orange-500/12 text-orange-400 border border-orange-500/20",
     cancelled: "bg-red-500/12 text-red-400 border border-red-500/20",
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] px-6 py-8">
       <div className="max-w-4xl mx-auto">
-
         {/* Profile Header */}
         <div className="flex items-center gap-4 mb-7">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-xl font-bold text-white flex-shrink-0">
@@ -105,20 +117,32 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Total Orders", value: orders.length, color: "text-orange-500" },
-            { label: "Total Spent",  value: `₹ ${totalSpent.toLocaleString()}`, color: "text-white" },
-            { label: "Delivered",    value: delivered, color: "text-green-400" },
-            { label: "Saved Items",  value: "6", color: "text-white" },
+            {
+              label: "Total Orders",
+              value: orders.length,
+              color: "text-orange-500",
+            },
+            {
+              label: "Total Spent",
+              value: `₹ ${totalSpent.toLocaleString()}`,
+              color: "text-white",
+            },
+            { label: "Delivered", value: delivered, color: "text-green-400" },
+            { label: "Saved Items", value: "6", color: "text-white" },
           ].map((s) => (
-            <div key={s.label} className="bg-[#111] border border-white/7 rounded-2xl p-4">
-              <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1.5">{s.label}</p>
+            <div
+              key={s.label}
+              className="bg-[#111] border border-white/7 rounded-2xl p-4"
+            >
+              <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1.5">
+                {s.label}
+              </p>
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
           {/* Recent Orders */}
           <div className="bg-[#111] border border-white/7 rounded-2xl p-5">
             <h2 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">
@@ -126,7 +150,10 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
             </h2>
             <div className="space-y-1">
               {orders.slice(0, 5).map((order) => (
-                <div key={order._id} className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-none">
+                <div
+                  key={order._id}
+                  className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-none"
+                >
                   <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-base flex-shrink-0">
                     🍔
                   </div>
@@ -136,7 +163,9 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
                     </p>
                     <p className="text-xs text-zinc-500 mt-0.5">
                       {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric", month: "short", year: "numeric",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
                       })}
                     </p>
                   </div>
@@ -144,7 +173,9 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
                     <p className="text-sm font-semibold text-orange-500">
                       ₹ {order.totalAmount}
                     </p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${statusStyles[order.status] || statusStyles.pending}`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${statusStyles[order.status] || statusStyles.pending}`}
+                    >
                       {order.status || "pending"}
                     </span>
                   </div>
@@ -161,7 +192,6 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
           </div>
 
           <div className="flex flex-col gap-4">
-
             {/* Saved Addresses */}
             <div className="bg-[#111] border border-white/7 rounded-2xl p-5">
               <h2 className="text-xs font-semibold text-white uppercase tracking-widest mb-4">
@@ -169,10 +199,21 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
               </h2>
               <div className="space-y-2">
                 {[
-                  { type: "Home", icon: "🏠", text: "42, Shivaji Nagar, Pune, Maharashtra 411005" },
-                  { type: "Work", icon: "💼", text: "Tech Park, Hinjewadi Phase 2, Pune 411057" },
+                  {
+                    type: "Home",
+                    icon: "🏠",
+                    text: "42, Shivaji Nagar, Pune, Maharashtra 411005",
+                  },
+                  {
+                    type: "Work",
+                    icon: "💼",
+                    text: "Tech Park, Hinjewadi Phase 2, Pune 411057",
+                  },
                 ].map((addr) => (
-                  <div key={addr.type} className="flex gap-3 p-3 bg-[#0a0a0a] border border-white/7 rounded-xl">
+                  <div
+                    key={addr.type}
+                    className="flex gap-3 p-3 bg-[#0a0a0a] border border-white/7 rounded-xl"
+                  >
                     <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-sm flex-shrink-0">
                       {addr.icon}
                     </div>
@@ -203,17 +244,24 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
                   { key: "promoOffers", label: "Promo offers" },
                   { key: "smsUpdates", label: "Delivery updates via SMS" },
                 ].map((p) => (
-                  <div key={p.key} className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-none">
+                  <div
+                    key={p.key}
+                    className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-none"
+                  >
                     <span className="text-sm text-zinc-400">{p.label}</span>
                     <button
-                      onClick={() => setPrefs((prev) => ({ ...prev, [p.key]: !prev[p.key] }))}
+                      onClick={() =>
+                        setPrefs((prev) => ({ ...prev, [p.key]: !prev[p.key] }))
+                      }
                       className={`relative w-9 h-5 rounded-full transition-all flex-shrink-0 ${
                         prefs[p.key] ? "bg-orange-500" : "bg-zinc-700"
                       }`}
                     >
-                      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
-                        prefs[p.key] ? "left-[18px]" : "left-0.5"
-                      }`} />
+                      <span
+                        className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
+                          prefs[p.key] ? "left-[18px]" : "left-0.5"
+                        }`}
+                      />
                     </button>
                   </div>
                 ))}
@@ -226,7 +274,6 @@ const delivered  = Array.isArray(orders) ? orders.filter((o) => o.status === "de
                 Log Out
               </button>
             </div>
-
           </div>
         </div>
       </div>
