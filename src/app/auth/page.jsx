@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
-export default function AuthPage() {
+function AuthPageContent() {
 
   
   const router = useRouter();
@@ -260,5 +260,12 @@ export default function AuthPage() {
         )}
       </div>
     </div>
+  );
+}
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthPageContent />
+    </Suspense>
   );
 }
