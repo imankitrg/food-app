@@ -18,10 +18,16 @@ export default function Profile() {
     const token = localStorage.getItem("token");
     // console.log(token); to verify token presence in console
     
-    if (!token) {
-      router.push("/auth");
-      return;
-    }
+    if (
+  !token ||
+  token === "undefined" ||
+  token === "null" ||
+  token.trim() === ""
+) {
+  localStorage.removeItem("token");
+  router.replace("/auth");
+  return;
+}
 
     // fetch user profile
     const fetchProfile = async () => {

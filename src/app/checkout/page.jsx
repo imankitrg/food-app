@@ -22,18 +22,19 @@ export default function Checkout() {
   const [orderError, setOrderError] = useState("");
 
   useEffect(() => {
-    // Auth check — looks for token in localStorage
-    const token = localStorage.getItem("token");
-    if (!token) {
-      // No token — redirect to /auth after short delay
-      setTimeout(() => router.push("/auth"), 1500);
-      setAuthStatus("unauthenticated");
-    } else {
-      setAuthStatus("authenticated");
-      const cartData = JSON.parse(localStorage.getItem("cart")) || [];
-      setCart(cartData);
-    }
-  }, []);
+  const token = localStorage.getItem("token");
+
+  if (!token || token === "undefined" || token === "null") {
+    setAuthStatus("unauthenticated");
+    router.replace("/auth?redirect=/checkout");
+    return;
+  }
+
+  setAuthStatus("authenticated");
+
+  const cartData = JSON.parse(localStorage.getItem("cart")) || [];
+  setCart(cartData);
+}, [router]);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const delivery = 40;
@@ -44,11 +45,21 @@ export default function Checkout() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handlePlaceOrder = async () => {
-    if (!form.name || !form.phone || !form.address || !form.city || !form.pincode) {
-      setOrderError("Please fill all required fields.");
-      return;
-    }
+const handlePlaceOrder = async () => {
+
+  const token = localStorage.getItem("token");
+  
+
+  if (!token || token === "undefined" || token === "null") {
+    router.replace("/auth?redirect=/checkout");
+    return;
+  }
+  console.log("TOKEN:", localStorage.getItem("token"));
+
+  if (!form.name || !form.phone || !form.address || !form.city || !form.pincode) {
+    setOrderError("Please fill all required fields.");
+    return;
+  }
 
     setIsLoading(true);
     setOrderError("");

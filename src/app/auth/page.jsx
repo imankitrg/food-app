@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
+
+  
   const router = useRouter();
   const [tab, setTab] = useState("login"); // "login" | "signup"
+
+        const searchParams = useSearchParams();
+
+        const redirect = searchParams.get("redirect") || "/";
 
   // Login form state
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
@@ -34,12 +41,13 @@ export default function AuthPage() {
         return;
       }
       localStorage.setItem("token", data.token); // same as original
-      router.push("/");
+      router.push(redirect); // after login → redirect to /redirect which will handle further redirection logic
     } catch (error) {
       console.log("Login error:", error);
-      setLoginError("Network error. Please try again.");
+      setLoginError("Network error. Please try again."); 
     }
       };
+
 
   // ── Signup logic — same as original ──
   const handleSignup = async (e) => {
