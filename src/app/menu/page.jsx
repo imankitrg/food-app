@@ -2,11 +2,23 @@
 
 import { useEffect, useState } from "react";
 
+const CATEGORIES = [
+  "All",
+  "starter",
+  "main_course",
+  "dessert",
+  "drink",
+];
+
 export default function Menu() {
 
+  // STATES
   const [menu, setMenu] = useState([]);
-  const [addedIds, setAddedIds] = useState({});
   const [loading, setLoading] = useState(true);
+  const [addedIds, setAddedIds] = useState({});
+
+  // FILTER
+  const [activeFilter, setActiveFilter] = useState("All");
 
   // PAGINATION
   const [page, setPage] = useState(1);
@@ -15,34 +27,58 @@ export default function Menu() {
   const LIMIT = 5;
 
   // FETCH MENU
-  const fetchMenu = async (currentPage = 1) => {
+  const fetchMenu = async (
+    currentPage = 1,
+    category = activeFilter,
+    reset = false
+  ) => {
 
     try {
 
-      const res = await fetch(
-        // `${process.env.NEXT_PUBLIC_API_URL}/menu/get?page=${currentPage}&limit=${LIMIT}`
-        `http://localhost:8080/menu/get?page=${currentPage}&limit=${LIMIT}`
-      );
+      setLoading(true);
+
+      // URL
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/menu/get?page=${currentPage}&limit=${LIMIT}`;
+      
+      // CATEGORY FILTER
+      if (category !== "All") {
+        url += `&category=${category}`;
+      }
+
+      const res = await fetch(url);
 
       const data = await res.json();
 
-      // APPEND NEW DATA
-      setMenu((prev) => {
+      // RESET DATA
+      if (reset) {
 
-        const combined = [...prev, ...data.data];
+        setMenu(data.data);
 
-        // REMOVE DUPLICATES
-        const uniqueItems = combined.filter(
-          (item, index, self) =>
-            index === self.findIndex((i) => i._id === item._id)
-        );
+      } else {
 
-        return uniqueItems;
-      });
+        // APPEND DATA
+        setMenu((prev) => {
+
+          const combined = [...prev, ...data.data];
+
+          // REMOVE DUPLICATES
+          const uniqueItems = combined.filter(
+            (item, index, self) =>
+              index === self.findIndex((i) => i._id === item._id)
+          );
+
+          return uniqueItems;
+        });
+      }
 
       // CHECK MORE DATA
       if (data.data.length < LIMIT) {
+
         setHasMore(false);
+
+      } else {
+
+        setHasMore(true);
       }
 
     } catch (error) {
@@ -52,14 +88,25 @@ export default function Menu() {
     } finally {
 
       setLoading(false);
-
     }
   };
 
   // INITIAL FETCH
   useEffect(() => {
-    fetchMenu(1);
+    fetchMenu(1, activeFilter, true);
   }, []);
+
+  // CATEGORY CHANGE
+  const handleCategory = async (category) => {
+
+    setActiveFilter(category);
+
+    setPage(1);
+
+    setMenu([]);
+
+    await fetchMenu(1, category, true);
+  };
 
   // LOAD MORE
   const loadMore = async () => {
@@ -109,6 +156,7 @@ export default function Menu() {
 
       {/* HEADER */}
       <div className="text-center mb-8">
+
         <h1 className="text-3xl font-bold text-white mb-2">
           Our Menu
         </h1>
@@ -118,10 +166,29 @@ export default function Menu() {
         </p>
       </div>
 
+      {/* CATEGORY FILTER */}
+      <div className="flex justify-center flex-wrap gap-3 mb-8">
+
+        {CATEGORIES.map((cat) => (
+
+          <button
+            key={cat}
+            onClick={() => handleCategory(cat)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              activeFilter === cat
+                ? "bg-orange-500 text-white"
+                : "bg-[#111] border border-white/10 text-zinc-400 hover:border-orange-500/30 hover:text-white"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       {/* GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
 
-        {loading
+        {loading && menu.length === 0
           ? Array.from({ length: 6 }).map((_, index) => (
 
               <div
@@ -131,12 +198,17 @@ export default function Menu() {
                 <div className="h-40 bg-white/5" />
 
                 <div className="p-4 space-y-3">
+
                   <div className="h-4 bg-white/10 rounded-full w-3/4" />
+
                   <div className="h-3 bg-white/10 rounded-full w-5/6" />
+
                   <div className="h-3 bg-white/10 rounded-full w-1/2" />
 
                   <div className="flex items-center justify-between pt-3 border-t border-white/6">
+
                     <div className="h-6 w-16 bg-white/10 rounded-full" />
+
                     <div className="h-8 w-20 bg-white/10 rounded-full" />
                   </div>
                 </div>
@@ -195,6 +267,7 @@ export default function Menu() {
                     </span>
 
                     {item.ingredients?.slice(0, 3).map((ing) => (
+
                       <span
                         key={ing}
                         className="px-2 py-0.5 rounded-md text-xs bg-white/5 border border-white/7 text-zinc-400"
@@ -234,8 +307,26 @@ export default function Menu() {
             ))}
       </div>
 
+      {/* EMPTY STATE */}
+      {!loading && menu.length === 0 && (
+        <div className="text-center py-20">
+
+          <div className="text-5xl mb-4">
+            🍽️
+          </div>
+
+          <h2 className="text-white text-xl font-semibold mb-2">
+            No Items Found
+          </h2>
+
+          <p className="text-zinc-500 text-sm">
+            Try another category
+          </p>
+        </div>
+      )}
+
       {/* LOAD MORE */}
-      {!loading && hasMore && (
+      {!loading && hasMore && menu.length > 0 && (
         <div className="flex justify-center mt-10">
 
           <button
@@ -244,7 +335,6 @@ export default function Menu() {
           >
             Load More
           </button>
-
         </div>
       )}
     </div>
