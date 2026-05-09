@@ -17,8 +17,10 @@ export default function Menu() {
   const [loading, setLoading] = useState(true);
   const [addedIds, setAddedIds] = useState({});
 
-  // FILTER
+  // FILTERS
   const [activeFilter, setActiveFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("");
 
   // PAGINATION
   const [page, setPage] = useState(1);
@@ -30,6 +32,8 @@ export default function Menu() {
   const fetchMenu = async (
     currentPage = 1,
     category = activeFilter,
+    searchValue = search,
+    sortValue = sort,
     reset = false
   ) => {
 
@@ -37,12 +41,23 @@ export default function Menu() {
 
       setLoading(true);
 
-      // URL
+      // BASE URL
       let url = `${process.env.NEXT_PUBLIC_API_URL}/menu/get?page=${currentPage}&limit=${LIMIT}`;
-      
-      // CATEGORY FILTER
+      // let url = `http://localhost:8080/menu/get?page=${currentPage}&limit=${LIMIT}`;
+
+      // CATEGORY
       if (category !== "All") {
         url += `&category=${category}`;
+      }
+
+      // SEARCH
+      if (searchValue.trim()) {
+        url += `&search=${searchValue}`;
+      }
+
+      // SORT
+      if (sortValue) {
+        url += `&sort=${sortValue}`;
       }
 
       const res = await fetch(url);
@@ -93,8 +108,33 @@ export default function Menu() {
 
   // INITIAL FETCH
   useEffect(() => {
-    fetchMenu(1, activeFilter, true);
+
+    fetchMenu(1, activeFilter, search, sort, true);
+
   }, []);
+
+  // SEARCH + SORT EFFECT
+  useEffect(() => {
+
+    const delay = setTimeout(() => {
+
+      setPage(1);
+
+      setMenu([]);
+
+      fetchMenu(
+        1,
+        activeFilter,
+        search,
+        sort,
+        true
+      );
+
+    }, 500);
+
+    return () => clearTimeout(delay);
+
+  }, [search, sort]);
 
   // CATEGORY CHANGE
   const handleCategory = async (category) => {
@@ -105,7 +145,13 @@ export default function Menu() {
 
     setMenu([]);
 
-    await fetchMenu(1, category, true);
+    await fetchMenu(
+      1,
+      category,
+      search,
+      sort,
+      true
+    );
   };
 
   // LOAD MORE
@@ -115,7 +161,12 @@ export default function Menu() {
 
     setPage(nextPage);
 
-    await fetchMenu(nextPage);
+    await fetchMenu(
+      nextPage,
+      activeFilter,
+      search,
+      sort
+    );
   };
 
   // ADD TO CART
@@ -164,6 +215,46 @@ export default function Menu() {
         <p className="text-sm text-zinc-500">
           Fresh ingredients, bold flavors — order what you love
         </p>
+      </div>
+
+      {/* SEARCH + SORT */}
+      <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
+
+        {/* SEARCH */}
+        <input
+          type="text"
+          placeholder="Search food..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white outline-none w-full md:w-[300px]"
+        />
+
+        {/* SORT */}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white outline-none"
+        >
+          <option value="">
+            Sort By
+          </option>
+
+          <option value="price_asc">
+            Price Low → High
+          </option>
+
+          <option value="price_desc">
+            Price High → Low
+          </option>
+
+          <option value="newest">
+            Newest
+          </option>
+
+          <option value="popular">
+            Popular
+          </option>
+        </select>
       </div>
 
       {/* CATEGORY FILTER */}
