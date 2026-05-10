@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { setCookie } from "../../lib/cookies";
+import { signIn } from "next-auth/react";
 
 function AuthPageContent() {
   const router = useRouter();
@@ -166,9 +167,14 @@ function AuthPageContent() {
 
             <button
               type="button"
+              onClick={() =>
+                signIn("google", {
+                  callbackUrl: "/google-success",
+                })
+              }
               className="w-full py-3 border border-white/10 hover:border-white/20 rounded-xl text-sm text-zinc-400 hover:text-white transition-all"
             >
-              Google Sign In
+              Google Sign Up
             </button>
 
             <p className="text-center text-xs text-zinc-600 pt-1">
@@ -247,9 +253,14 @@ function AuthPageContent() {
 
             <button
               type="button"
+              onClick={() =>
+                signIn("google", {
+                  callbackUrl: "/google-success",
+                })
+              }
               className="w-full py-3 border border-white/10 hover:border-white/20 rounded-xl text-sm text-zinc-400 hover:text-white transition-all"
             >
-              Google Sign Up
+              Google Sign In
             </button>
 
             <p className="text-center text-xs text-zinc-600 pt-1">
