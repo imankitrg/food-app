@@ -102,28 +102,48 @@ function MenuModal({ item, onClose, onSaved, token }) {
     }
     setLoading(true);
     setError("");
+    const ingArr = form.ingredients
+      ? form.ingredients.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
     try {
-      const fd = new FormData();
-      fd.append("name", form.name.trim());
-      fd.append("price", form.price);
-      fd.append("description", form.description || "");
-      fd.append("category", form.category);
-      fd.append("taste", form.taste);
-      fd.append("is_drink", form.is_drink);
-      fd.append("isAvailable", form.isAvailable);
-      const ingArr = form.ingredients
-        ? form.ingredients.split(",").map((s) => s.trim()).filter(Boolean)
-        : [];
-      ingArr.forEach((ing) => fd.append("ingredients[]", ing));
-      if (form.image) fd.append("image", form.image);
-
-      const url = isEdit ? `${API}/menu/update/${item._id}` : `${API}/menu/create`;
-      const method = isEdit ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
+      let res;
+      if (isEdit) {
+        // PUT — JSON (backend uses req.body, no multer on update route)
+        res = await fetch(`${API}/menu/update/${item._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: form.name.trim(),
+            price: Number(form.price),
+            description: form.description || "",
+            category: form.category,
+            taste: form.taste,
+            is_drink: form.is_drink,
+            isAvailable: form.isAvailable,
+            ingredients: ingArr,
+          }),
+        });
+      } else {
+        // POST — FormData (multer handles image)
+        const fd = new FormData();
+        fd.append("name", form.name.trim());
+        fd.append("price", form.price);
+        fd.append("description", form.description || "");
+        fd.append("category", form.category);
+        fd.append("taste", form.taste);
+        fd.append("is_drink", form.is_drink);
+        fd.append("isAvailable", form.isAvailable);
+        ingArr.forEach((ing) => fd.append("ingredients[]", ing));
+        if (form.image) fd.append("image", form.image);
+        res = await fetch(`${API}/menu/create`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        });
+      }
       const data = await res.json();
       if (!res.ok) { setError(data.msg || "Something went wrong."); return; }
       onSaved();
@@ -376,7 +396,7 @@ function MenuTab({ token }) {
       const res = await fetch(`${API}/menu/get`);
       const data = await res.json();
       if (!res.ok) { setError(data.msg || "Failed to load menu."); return; }
-      setItems(Array.isArray(data) ? data : data.menu || data.items || []);
+      setItems(data.data || data.menu || data.items || (Array.isArray(data) ? data : []));
     } catch {
       setError("Network error. Could not load menu.");
     } finally {
